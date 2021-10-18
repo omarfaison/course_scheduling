@@ -25,6 +25,7 @@ for (i in 1:nrow(course_data)) {
 
 classpairs<-select(final, class1, class2)
 graph01<-graph.edgelist(as.matrix(classpairs), directed=F)
+allweight<-degree(graph01, mode="all")
 plot(graph01)
 
 nhspairs<- final %>%
@@ -33,8 +34,6 @@ nhspairs<- final %>%
   select(class1, class2)
 
 nhsgraph01<-graph.edgelist(as.matrix(nhspairs), directed=F)
-plot(nhsgraph01)
-
 nhsweight<-degree(nhsgraph01, mode="all")
 plot(nhsgraph01, vertex.size=nhsweight)
 
