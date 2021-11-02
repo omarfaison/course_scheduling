@@ -2,6 +2,8 @@ library(googlesheets4)
 library(tidyverse)
 library(igraph)
 library(stringr)
+library(shiny)
+library(shinydashboard)
 
 gs4_deauth()
 course_data<-read_sheet("https://docs.google.com/spreadsheets/d/1nCZXnE6hM8syZvrO7t6aN42uuxTGUXhMu7kOhMMN7jQ/edit?usp=sharing")
@@ -23,26 +25,15 @@ for (i in 1:nrow(course_data)) {
   final<-rbind(final, reunite)
 }
 
-#all classes
-classpairs<-select(final, class1, class2)
-graph01<-graph.edgelist(as.matrix(classpairs), directed=F)
-allweight<-degree(graph01, mode="all")
-plot(graph01)
+ui<-fluidPage(
+ checkboxGroupInput("year", "Select years", unique(final$Year), NULL),
+  textOutput("chosen"),
+  tableOutput("selected_data")
+)
 
-#first 2 years, college of natural & health sciences
-nhspairs<- final %>%
-  filter(College == "Natural & Health Sciences" ) %>%
-  filter(Year < 3) %>%
-  select(class1, class2)
+server<-function(input, output, session) {
+  output$chosen<-renderText(paste0("You chose",input$year))
+  output$selected_data<-renderTable(final %>% filter(Year==input$year))
+}
 
-nhsgraph01<-graph.edgelist(as.matrix(nhspairs), directed=F)
-nhsweight<-degree(nhsgraph01, mode="all")
-plot(nhsgraph01, vertex.size=nhsweight)
-
-#mass comm 
-mass_com_pairs<-final %>%
-  filter(str_detect(Major, "^Mass Comm"))%>%
-  select(class1, class2)
-
-mass_com_graph<-graph.edgelist(as.matrix(mass_com_pairs), directed=F)
-plot(mass_com_graph)
+shinyApp(ui, server)
